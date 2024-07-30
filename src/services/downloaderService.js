@@ -1,29 +1,23 @@
-const axios = require('axios');
 const ytdl = require('ytdl-core');
-const puppeteer = require('puppeteer');
 
 async function downloadFromYouTube(url, type) {
-    const info = await ytdl.getInfo(url);
-    const format = ytdl.chooseFormat(info.formats, { quality: type === 'audio' ? 'highestaudio' : 'highestvideo' });
-    const stream = ytdl.downloadFromInfo(info, { format });
-    return { stream, ext: type === 'audio' ? 'mp3' : 'mp4' };
-}
+    try {
+        const info = await ytdl.getInfo(url);
+        let format;
 
-async function downloadFromFacebook(url) {
-    // Facebook download logic
-}
+        if (type === 'audio') {
+            format = ytdl.chooseFormat(info.formats, { quality: 'highestaudio' });
+            format = { ...format, itag: '140' }; // MP3 format
+        } else {
+            format = ytdl.chooseFormat(info.formats, { quality: 'lowestvideo' });
+            format = { ...format, itag: '18' }; // MP4 format 360p
+        }
 
-async function downloadFromTikTok(url) {
-    // TikTok download logic
+        const stream = ytdl.downloadFromInfo(info, { format });
+        const ext = type === 'audio' ? 'mp3' : 'mp4';
+        return { stream, ext };
+    } catch (error) {
+        console.error('Error in downloadFromYouTube:', error);
+        throw error;
+    }
 }
-
-async function downloadFromX(url) {
-    // X (formerly Twitter) download logic
-}
-
-module.exports = {
-    downloadFromYouTube,
-    downloadFromFacebook,
-    downloadFromTikTok,
-    downloadFromX,
-};
